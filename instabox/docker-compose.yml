@@ -1,0 +1,71 @@
+# IAOP shared-dev Keycloak on InstaBox — docker-compose.
+# Network: private `iaop` bridge. Postgres has NO published port.
+# Edge (nginx) publishes 8080 for the InstaBox HTTPS port-forward.
+# Keycloak admin is reachable only via SSH tunnel to 127.0.0.1:8081.
+name: iaop-keycloak
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: iaop-keycloak-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak_app
+      POSTGRES_PASSWORD: ${KC_DB_PASSWORD:?set in secrets.env}
+    volumes:
+      - /data/iaop-keycloak/postgres:/var/lib/postgresql/data
+    networks: [iaop]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak_app -d keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.2
+    container_name: iaop-keycloak
+    restart: unless-stopped
+    command: ["start"]
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://db:5432/keycloak
+      KC_DB_USERNAME: keycloak_app
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD:?set in secrets.env}
+      KC_HOSTNAME: ${KC_PUBLIC_URL:?set after port publish}
+      KC_HOSTNAME_STRICT: "true"
+      KC_PROXY_HEADERS: xforwarded
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_ADMIN_USER:?set in secrets.env}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD:?set in secrets.env}
+    ports:
+      # admin/direct access ONLY via SSH tunnel (127.0.0.1 on the box)
+      - "127.0.0.1:8081:8080"
+    networks: [iaop]
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && echo -e 'GET /health/ready HTTP/1.0\\r\\n\\r\\n' >&3 && grep -q '200' <&3"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
+
+  edge:
+    image: nginx:1.27.5-alpine
+    container_name: iaop-keycloak-edge
+    restart: unless-stopped
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8080:8080"
+    networks: [iaop]
+    depends_on:
+      - keycloak
+
+networks:
+  iaop:
+    driver: bridge
