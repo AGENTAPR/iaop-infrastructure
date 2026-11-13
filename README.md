@@ -60,3 +60,7 @@ No business logic or service implementation exists yet.
 - Squash merges preferred; merge commits and rebases disabled
 - Pull requests required before merging into `main`
 - Topics: iaop, insurance, insurance-agents, enterprise-architecture, devops, infrastructure-as-code, docker, kubernetes
+## Foundation contents
+
+- `k8s/base/` — namespace + default-deny NetworkPolicy foundations
+- `docs/infrastructure.md` — layout, pending decisions, rules
