@@ -1,0 +1,34 @@
+name: Main CI
+
+# Validates infra manifests. Runs ONLY on pushes to main.
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: main-ci-${{ github.repository }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Manifest validation
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate YAML manifests
+        run: |
+          python - <<'PY'
+          import glob
+          import yaml
+          files = glob.glob('k8s/**/*.yaml', recursive=True) + glob.glob('docs/**/*.yaml', recursive=True)
+          assert files, 'no manifests found'
+          for f in files:
+              docs = list(yaml.safe_load_all(open(f)))
+              assert all(d is None or isinstance(d, dict) for d in docs), f
+              print(f'OK {f}')
+          PY
