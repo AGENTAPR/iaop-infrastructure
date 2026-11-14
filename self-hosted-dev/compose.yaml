@@ -1,0 +1,36 @@
+# ==============================================================================
+# IAOP Self-Hosted DEV — Master Docker Compose Orchestrator
+# Target Host: AMD Ryzen 5, 16 GB RAM, 256 GB NVMe SSD
+# Profiles:
+#   - foundation: PostgreSQL 16, Keycloak 24, Kafka KRaft 3.7, Caddy, Developer Portal
+#   - agent: Agent Service, Agent BFF
+#   - agency: Agency Service
+#   - integration: Integration Service
+#   - workflow: Flowable OSS 7.0
+#   - observability: OpenTelemetry Collector, Prometheus
+#   - cloudflared: Cloudflare Zero-Trust Ingress Tunnel
+#   - all: Runs all microservices and infrastructure
+# ==============================================================================
+
+include:
+  - compose.foundation.yaml
+  - compose.domains.yaml
+  - compose.workflow.yaml
+  - compose.observability.yaml
+
+networks:
+  iaop-internal:
+    name: iaop-internal
+    driver: bridge
+
+volumes:
+  pg_data:
+    name: iaop_pg_data
+  kafka_data:
+    name: iaop_kafka_data
+  caddy_data:
+    name: iaop_caddy_data
+  caddy_config:
+    name: iaop_caddy_config
+  prom_data:
+    name: iaop_prom_data

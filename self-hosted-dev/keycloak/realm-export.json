@@ -1,0 +1,127 @@
+{
+  "realm": "iaop",
+  "enabled": true,
+  "displayName": "IAOP Enterprise Platform",
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "accessTokenLifespan": 1800,
+  "ssoSessionIdleTimeout": 36000,
+  "ssoSessionMaxLifespan": 72000,
+  "roles": {
+    "realm": [
+      {
+        "name": "agent",
+        "description": "Insurance Agent lifecycle user"
+      },
+      {
+        "name": "agency_manager",
+        "description": "Agency Leader and unit manager"
+      },
+      {
+        "name": "operations_admin",
+        "description": "Platform Operations Administrator"
+      },
+      {
+        "name": "compliance_officer",
+        "description": "Compliance, KYC and AML auditor"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "agenapr-frontend",
+      "name": "AGENA Agent Lifecycle Webapp",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "rootUrl": "http://localhost:3000",
+      "baseUrl": "/",
+      "redirectUris": [
+        "http://localhost:3000/*",
+        "https://agent.dev.iaop.internal/*",
+        "https://*.trycloudflare.com/*"
+      ],
+      "webOrigins": ["*"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      }
+    },
+    {
+      "clientId": "iaop-agent-bff",
+      "name": "IAOP Agent BFF Client",
+      "enabled": true,
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "dev-agent-bff-secret-384918237498127394",
+      "standardFlowEnabled": false,
+      "serviceAccountsEnabled": true,
+      "directAccessGrantsEnabled": false
+    },
+    {
+      "clientId": "iaop-backend-m2m",
+      "name": "IAOP Backend Machine-to-Machine",
+      "enabled": true,
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "dev-m2m-secret-918273645192837465",
+      "standardFlowEnabled": false,
+      "serviceAccountsEnabled": true,
+      "directAccessGrantsEnabled": false
+    }
+  ],
+  "users": [
+    {
+      "username": "agent.test",
+      "enabled": true,
+      "email": "agent.test@iaop.internal",
+      "firstName": "Budi",
+      "lastName": "Santoso",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "AgentPass123!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["agent"]
+    },
+    {
+      "username": "manager.test",
+      "enabled": true,
+      "email": "manager.test@iaop.internal",
+      "firstName": "Dewi",
+      "lastName": "Lestari",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "ManagerPass123!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["agency_manager"]
+    },
+    {
+      "username": "ops.admin",
+      "enabled": true,
+      "email": "ops.admin@iaop.internal",
+      "firstName": "Platform",
+      "lastName": "Admin",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "AdminPass123!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["operations_admin"]
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+# ==============================================================================
+# Cloudflare Tunnel Configuration for IAOP Self-Hosted DEV
+# Zero-Trust Ingress without Inbound Firewall Exceptions
+# ==============================================================================
+
+tunnel: ${CLOUDFLARE_TUNNEL_ID:-iaop-dev-tunnel}
+credentials-file: /etc/cloudflared/cert.json
+
+ingress:
+  # Centralized Swagger Developer Portal
+  - hostname: docs-dev.iaop.internal
+    service: http://caddy:80
+  
+  # API Gateway / BFF
+  - hostname: api-dev.iaop.internal
+    service: http://caddy:80
+
+  # Keycloak SSO
+  - hostname: auth-dev.iaop.internal
+    service: http://caddy:80
+
+  # AGENA Frontend dev tunnel
+  - hostname: agent-dev.iaop.internal
+    service: http://host.docker.internal:3000
+
+  # Default Catch-all rule (Required by cloudflared)
+  - service: http_status:404

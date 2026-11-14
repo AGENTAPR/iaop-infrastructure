@@ -1,0 +1,123 @@
+# ==============================================================================
+# IAOP Self-Hosted DEV Reverse Proxy Caddyfile
+# Unified Ingress, Host Routing, Security Headers & Buffer Protection
+# ==============================================================================
+
+{
+    admin off
+    auto_https off
+    log {
+        output stdout
+        format json
+    }
+}
+
+(security_headers) {
+    header {
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "geolocation=(), camera=(), microphone=()"
+        Cache-Control "no-store, no-cache, must-revalidate"
+        -Server
+    }
+}
+
+:80 {
+    import security_headers
+    encode zstd gzip
+
+    # Health check for reverse proxy itself
+    handle /healthz {
+        respond "OK" 200
+    }
+
+    # Centralized Swagger Developer Portal
+    handle /docs* {
+        reverse_proxy iaop-developer-portal:8080 {
+            header_up Host {upstream_hostport}
+            header_up X-Real-IP {remote_host}
+        }
+    }
+    handle /swagger* {
+        reverse_proxy iaop-developer-portal:8080 {
+            header_up Host {upstream_hostport}
+            header_up X-Real-IP {remote_host}
+        }
+    }
+
+    # Keycloak Identity Provider
+    handle /auth* {
+        reverse_proxy keycloak:8080 {
+            header_up Host {upstream_hostport}
+            header_up X-Forwarded-Proto http
+            header_up X-Real-IP {remote_host}
+        }
+    }
+    handle /realms* {
+        reverse_proxy keycloak:8080 {
+            header_up Host {upstream_hostport}
+            header_up X-Forwarded-Proto http
+            header_up X-Real-IP {remote_host}
+        }
+    }
+    handle /resources* {
+        reverse_proxy keycloak:8080 {
+            header_up Host {upstream_hostport}
+            header_up X-Forwarded-Proto http
+            header_up X-Real-IP {remote_host}
+        }
+    }
+
+    # Agent BFF (AGENA Gateway)
+    handle /api/v1/agent-bff* {
+        reverse_proxy iaop-agent-bff:8080 {
+            header_up Host {upstream_hostport}
+            header_up X-Real-IP {remote_host}
+        }
+    }
+    handle /api/v1/auth* {
+        reverse_proxy iaop-agent-bff:8080 {
+            header_up Host {upstream_hostport}
+            header_up X-Real-IP {remote_host}
+        }
+    }
+    handle /api/v1/dashboard* {
+        reverse_proxy iaop-agent-bff:8080 {
+            header_up Host {upstream_hostport}
+            header_up X-Real-IP {remote_host}
+        }
+    }
+    handle /api/v1/profile* {
+        reverse_proxy iaop-agent-bff:8080 {
+            header_up Host {upstream_hostport}
+            header_up X-Real-IP {remote_host}
+        }
+    }
+
+    # Domain Services direct routes (Internal Developer access)
+    handle /api/v1/agents* {
+        reverse_proxy iaop-agent-service:8080
+    }
+    handle /api/v1/agencies* {
+        reverse_proxy iaop-agency-service:8080
+    }
+    handle /api/v1/integration* {
+        reverse_proxy iaop-integration-service:8080
+    }
+
+    # Flowable BPMN Engine
+    handle /flowable-rest* {
+        reverse_proxy iaop-workflow:8080
+    }
+
+    # Observability UI
+    handle /prometheus* {
+        reverse_proxy prometheus:9090
+    }
+
+    # Default fallback: redirect to Swagger Portal
+    handle {
+        redir /docs/ permanent
+    }
+}
