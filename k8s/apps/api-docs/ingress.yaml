@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: iaop-developer-portal
+  namespace: iaop
+  labels:
+    app.kubernetes.io/name: iaop-developer-portal
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  rules:
+    - host: api-docs.iaop.internal
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: iaop-developer-portal
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - api-docs.iaop.internal
+      secretName: iaop-api-docs-tls
