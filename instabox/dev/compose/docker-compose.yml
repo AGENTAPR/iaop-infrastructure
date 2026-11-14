@@ -14,6 +14,11 @@ services:
       POSTGRES_USER: iaop_admin
       POSTGRES_PASSWORD: ${IAOP_DB_ADMIN_PASSWORD:?set in .env}
       POSTGRES_DB: postgres
+      # Passed through to 01-databases.sh for idempotent role creation
+      AGENT_DB_PASSWORD: ${AGENT_DB_PASSWORD:?set in .env}
+      AGENCY_DB_PASSWORD: ${AGENCY_DB_PASSWORD:?set in .env}
+      ELIG_DB_PASSWORD: ${ELIG_DB_PASSWORD:?set in .env}
+      BFF_DB_PASSWORD: ${BFF_DB_PASSWORD:?set in .env}
     volumes:
       - /data/iaop-dev/postgres:/var/lib/postgresql/data
       - ./initdb:/docker-entrypoint-initdb.d:ro
@@ -80,10 +85,12 @@ services:
       db: { condition: service_healthy }
       kafka: { condition: service_healthy }
     networks: [iaop-dev]
-    # Image HEALTHCHECK uses wget which is absent in debian:slim;
-    # liveness is verified via HTTP from the host/network instead.
     healthcheck:
-      disable: true
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health/live"]
+      interval: 15s
+      timeout: 5s
+      start_period: 20s
+      retries: 5
     deploy:
       resources:
         limits: { memory: 512M }
@@ -108,12 +115,14 @@ services:
     depends_on:
       db: { condition: service_healthy }
       kafka: { condition: service_healthy }
-      agent-service: { condition: service_started }
+      agent-service: { condition: service_healthy }
     networks: [iaop-dev]
-    # Image HEALTHCHECK uses wget which is absent in debian:slim;
-    # liveness is verified via HTTP from the host/network instead.
     healthcheck:
-      disable: true
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health/live"]
+      interval: 15s
+      timeout: 5s
+      start_period: 20s
+      retries: 5
     deploy:
       resources:
         limits: { memory: 512M }
@@ -131,10 +140,12 @@ services:
     depends_on:
       db: { condition: service_healthy }
     networks: [iaop-dev]
-    # Image HEALTHCHECK uses wget which is absent in debian:slim;
-    # liveness is verified via HTTP from the host/network instead.
     healthcheck:
-      disable: true
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health/live"]
+      interval: 15s
+      timeout: 5s
+      start_period: 20s
+      retries: 5
     deploy:
       resources:
         limits: { memory: 384M }
@@ -163,13 +174,15 @@ services:
       - "127.0.0.1:8082:8080"
     depends_on:
       db: { condition: service_healthy }
-      agent-service: { condition: service_started }
-      agency-service: { condition: service_started }
+      agent-service: { condition: service_healthy }
+      agency-service: { condition: service_healthy }
     networks: [iaop-dev]
-    # Image HEALTHCHECK uses wget which is absent in debian:slim;
-    # liveness is verified via HTTP from the host/network instead.
     healthcheck:
-      disable: true
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health/ready"]
+      interval: 15s
+      timeout: 5s
+      start_period: 25s
+      retries: 5
     deploy:
       resources:
         limits: { memory: 512M }
@@ -190,10 +203,12 @@ services:
     ports:
       - "127.0.0.1:8083:8080"
     networks: [iaop-dev]
-    # Image HEALTHCHECK uses wget which is absent in debian:slim;
-    # liveness is verified via HTTP from the host/network instead.
     healthcheck:
-      disable: true
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health/live"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
     deploy:
       resources:
         limits: { memory: 256M }
