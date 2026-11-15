@@ -28,10 +28,12 @@ try {
     }
 
     # 3. Create network if needed
-    $networkExists = docker network ls --filter name=iaop-internal -q
-    if (-not $networkExists) {
-        Write-Host "Creating docker bridge network: iaop-internal..." -ForegroundColor Green
-        docker network create iaop-internal | Out-Null
+    foreach ($net in @('iaop-edge','iaop-domain','iaop-data')) {
+        $exists = docker network ls --filter name=$net -q
+        if (-not $exists) {
+            Write-Host "Creating docker bridge network: $net..." -ForegroundColor Green
+            docker network create $net | Out-Null
+        }
     }
 
     # 4. Start Compose profile

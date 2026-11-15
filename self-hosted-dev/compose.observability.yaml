@@ -14,8 +14,8 @@ services:
     volumes:
       - ./observability/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
     ports:
-      - "4317:4317" # OTLP gRPC
-      - "4318:4318" # OTLP HTTP
+      - "127.0.0.1:4317:4317" # OTLP gRPC (localhost only)
+      - "127.0.0.1:4318:4318" # OTLP HTTP (localhost only)
     deploy:
       resources:
         limits:
@@ -23,7 +23,8 @@ services:
         reservations:
           memory: 128M
     networks:
-      - iaop-internal
+      - iaop-domain
+
 
   prometheus:
     image: prom/prometheus:v2.51.0
@@ -37,7 +38,7 @@ services:
       - "--storage.tsdb.retention.size=${PROMETHEUS_RETENTION_SIZE:-15GB}"
       - "--web.enable-lifecycle"
     ports:
-      - "${PUBLIC_PROMETHEUS_PORT:-9090}:9090"
+      - "127.0.0.1:${PUBLIC_PROMETHEUS_PORT:-9090}:9090"  # scrape via SSH tunnel / localhost
     volumes:
       - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prom_data:/prometheus
@@ -53,4 +54,5 @@ services:
         reservations:
           memory: 256M
     networks:
-      - iaop-internal
+      - iaop-domain
+

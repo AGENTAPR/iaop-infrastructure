@@ -35,4 +35,5 @@ services:
         reservations:
           memory: 512M
     networks:
-      - iaop-internal
+      - iaop-domain
+

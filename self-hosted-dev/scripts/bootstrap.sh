@@ -23,11 +23,13 @@ if [ ! -f "$ROOT_DIR/.env" ]; then
     cp "$ROOT_DIR/.env.example" "$ROOT_DIR/.env"
 fi
 
-# 3. Create network if needed
-if ! docker network ls --filter name=iaop-internal -q | grep -q .; then
-    echo -e "\033[1;32mCreating docker bridge network: iaop-internal...\033[0m"
-    docker network create iaop-internal >/dev/null
-fi
+# 3. Create segmented networks if needed
+for net in iaop-edge iaop-domain iaop-data; do
+    if ! docker network ls --filter name=$net -q | grep -q .; then
+        echo -e "\033[1;32mCreating docker bridge network: $net...\033[0m"
+        docker network create $net >/dev/null
+    fi
+done
 
 # 4. Start Compose profile
 echo -e "\033[1;32mStarting Docker Compose profile: $PROFILE...\033[0m"
