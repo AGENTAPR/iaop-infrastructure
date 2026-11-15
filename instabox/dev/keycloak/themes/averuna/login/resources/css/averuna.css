@@ -1,0 +1,404 @@
+/* Averuna Partner theme for Keycloak — self-contained (no PatternFly).
+   Matched to averuna-partner-web sign-in page
+   (src/pages/auth/sign-in/page.tsx + src/style/**, aubergine theme).
+
+   Palette: primary hsl(279 24% 31%) / light 41% / dark 21%;
+   text-primary hsl(270 9% 14%); text-secondary hsl(0 0% 60%);
+   bg hsl(40 18% 97%); input border grey-200 hsl(0 0% 87%);
+   hover grey-500 75%; divider grey-100 91%; error hsl(347 64% 55%).
+   Fonts: Urbanist (headings/logo), Mulish (body/inputs/buttons).
+   Scale: h1 26px bold; base 16px/20px; sm 12px; h6 16px bold. */
+
+@import url('https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700&family=Urbanist:wght@600;700;800&display=swap');
+
+:root {
+  --av-primary: hsl(279, 24%, 31%);
+  --av-primary-light: hsl(279, 24%, 41%);
+  --av-primary-dark: hsl(279, 24%, 21%);
+  --av-text: hsl(270, 9%, 14%);
+  --av-text-secondary: hsl(0, 0%, 60%);
+  --av-border: hsl(0, 0%, 87%);
+  --av-border-hover: hsl(0, 0%, 75%);
+  --av-divider: hsl(0, 0%, 91%);
+  --av-bg: hsl(40, 18%, 97%);
+  --av-error: hsl(347, 64%, 55%);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; min-height: 100vh; }
+
+body {
+  font-family: 'Mulish', ui-sans-serif, system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 20px;
+  color: var(--av-text);
+  background-color: var(--av-bg);
+  background-image: url('../img/bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* ---- Page shell: flex center, p-4 ---- */
+.av-page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+/* ---- Card: Paper w-lg(512px) rounded-4xl(32px) bg white,
+   py-14(56px) + px-8(32px)/sm:px-14(56px @>=480px),
+   shadow-darker-xs: 0 3px 8px rgba(0,0,0,.08) ---- */
+.av-card {
+  background: #fff;
+  border-radius: 32px;
+  box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.08);
+  width: 512px;
+  max-width: calc(100vw - 32px);
+  padding: 56px;
+}
+@media (max-width: 479px) {
+  .av-card { padding: 56px 32px; }
+}
+
+/* Header realm title is suppressed on every page. */
+#kc-header { display: none !important; }
+
+/* ---- Logo wordmark (login page): Urbanist 18px bold tracking-tight,
+   "Averuna" text-primary + " Partner" primary; offset 72px ---- */
+.av-logo { margin: 0 0 72px; text-align: center; }
+.av-logo-text {
+  font-family: 'Urbanist', ui-sans-serif, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--av-text);
+}
+.av-logo-accent { color: var(--av-primary); }
+
+/* ---- Page title: h1 → Urbanist 26px bold, mb-2 ---- */
+#kc-page-title {
+  font-family: 'Urbanist', ui-sans-serif, sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.167;
+  letter-spacing: normal;
+  color: var(--av-text);
+  margin: 0 0 8px;
+  text-align: left;
+}
+#kc-header ~ * #kc-page-title,
+#kc-form-header #kc-page-title { text-align: left; }
+
+/* Subtitle under title (login page). */
+.av-subtitle {
+  font-family: 'Mulish', ui-sans-serif, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--av-text);
+  margin: 0 0 40px;
+}
+
+/* ---- Form fields: FormControl mb-4(16px); label mb-2 semibold ---- */
+.av-field { margin-bottom: 16px; }
+.av-field:last-child { margin-bottom: 0; }
+
+.av-label {
+  display: block;
+  font-family: 'Mulish', ui-sans-serif, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--av-text);
+  margin-bottom: 8px;
+}
+
+/* Outlined input: square, grey-200 border, px-15px py-5px, 16px/20px;
+   hover grey-500; focus outline primary/40 2px offset -1px. */
+.av-input,
+input[type='text'],
+input[type='password'],
+input[type='email'],
+input[type='number'],
+input[type='tel'],
+input[type='url'],
+input[type='date'],
+input:not([type]),
+select,
+textarea {
+  width: 100%;
+  padding: 5px 15px;
+  font-family: 'Mulish', ui-sans-serif, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--av-text);
+  background: transparent;
+  border: 1px solid var(--av-border);
+  border-radius: 0;
+  outline: 2px solid transparent;
+  outline-offset: -1px;
+  transition: border-color .15s ease, outline-color .15s ease;
+}
+textarea { padding: 8px 15px; }
+
+.av-input:hover,
+input[type='text']:hover,
+input[type='password']:hover,
+input[type='email']:hover,
+input[type='number']:hover,
+input[type='tel']:hover,
+input[type='url']:hover,
+input[type='date']:hover,
+input:not([type]):hover,
+select:hover,
+textarea:hover {
+  border-color: var(--av-border-hover);
+}
+
+.av-input:focus,
+input[type='text']:focus,
+input[type='password']:focus,
+input[type='email']:focus,
+input[type='number']:focus,
+input[type='tel']:focus,
+input[type='url']:focus,
+input[type='date']:focus,
+input:not([type]):focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid hsla(279, 24%, 41%, 0.4);
+  outline-offset: -1px;
+  border-color: transparent;
+}
+
+/* Password wrapper + eye toggle */
+.av-input-wrap { position: relative; }
+.av-input-wrap .av-input { padding-right: 44px; }
+.av-eye {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  background: transparent;
+  border: none;
+  color: var(--av-text-secondary);
+  cursor: pointer;
+  padding: 6px;
+}
+.av-eye:hover { color: var(--av-text); }
+.av-eye svg { width: 20px; height: 20px; display: block; }
+
+/* ---- Actions: gap-2(8px) — Reset link, Continue; button mb-4(16px) ---- */
+.av-reset-row { text-align: center; }
+.av-reset {
+  display: inline-block;
+  font-family: 'Mulish', ui-sans-serif, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--av-text-secondary);
+  text-decoration: none;
+}
+.av-reset:hover { color: var(--av-primary); text-decoration: underline; }
+
+/* Continue + all primary submit buttons: contained primary medium —
+   rounded-md(16px), px-20px py-8px, 16px/20px medium, full width. */
+.av-submit,
+#kc-login,
+#kc-form-buttons input[type='submit'],
+#kc-form-buttons button[type='submit'],
+#kc-form-buttons input[type='button'],
+#kc-form-buttons button,
+input[type='submit'],
+button[type='submit'] {
+  display: block;
+  width: 100%;
+  min-width: 144px;
+  margin-top: 8px;
+  margin-bottom: 16px;
+  padding: 8px 20px;
+  text-align: center;
+  font-family: 'Mulish', ui-sans-serif, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 20px;
+  text-transform: none;
+  letter-spacing: normal;
+  color: #fff;
+  background: var(--av-primary);
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  box-shadow: none;
+  transition: background .15s ease;
+}
+.av-submit:hover,
+#kc-login:hover,
+#kc-form-buttons input[type='submit']:hover,
+#kc-form-buttons button[type='submit']:hover,
+#kc-form-buttons button:hover,
+input[type='submit']:hover,
+button[type='submit']:hover {
+  background: var(--av-primary-light);
+}
+.av-submit:active,
+#kc-login:active,
+input[type='submit']:active,
+button[type='submit']:active {
+  background: var(--av-primary);
+}
+
+/* Legal copy: body2 → 12px secondary */
+.av-legal {
+  margin: 0;
+  font-family: 'Mulish', ui-sans-serif, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--av-text-secondary);
+}
+.av-legal-link { color: var(--av-primary); font-weight: 500; }
+.av-legal-link:hover { text-decoration: underline; }
+
+/* ---- Get Started: divider + h6(16px bold Urbanist) + body1 secondary ---- */
+#kc-info, #kc-registration { margin: 0; padding: 0; }
+.av-get-started { margin-top: 20px; }
+.av-divider {
+  border: none;
+  border-top: 1px solid var(--av-divider);
+  margin: 0 0 20px;
+}
+.av-get-started-title {
+  font-family: 'Urbanist', ui-sans-serif, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--av-text);
+  margin: 0 0 8px;
+}
+.av-get-started-body {
+  margin: 0;
+  font-family: 'Mulish', ui-sans-serif, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--av-text-secondary);
+}
+.av-get-started-link { color: var(--av-primary); font-weight: 500; }
+a.av-get-started-link:hover { text-decoration: underline; }
+
+/* Remember-me */
+.av-remember { margin: 0 0 16px; font-size: 14px; color: var(--av-text-secondary); }
+.av-remember input { accent-color: var(--av-primary); margin-right: 8px; }
+
+/* Field error */
+.av-field-error {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--av-error);
+}
+
+/* ---- Alerts (all auth pages) ---- */
+.av-alert,
+.alert-error, .alert-danger, .alert-success, .alert-info, .alert-warning {
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  margin-bottom: 16px;
+  border: 1px solid var(--av-border);
+  background: #fff;
+  color: var(--av-text);
+}
+.alert-error, .alert-danger, .av-alert.pf-m-danger {
+  border-color: hsl(347, 64%, 80%);
+  color: var(--av-error);
+}
+.alert-success, .av-alert.pf-m-success {
+  border-color: hsl(108, 45%, 80%);
+  color: hsl(108, 45%, 30%);
+  background: hsl(108, 45%, 96%);
+}
+.alert-info, .alert-warning, .av-alert.pf-m-info, .av-alert.pf-m-warning {
+  border-color: hsl(25, 82%, 80%);
+  color: hsl(25, 82%, 35%);
+  background: hsl(25, 82%, 95%);
+}
+
+/* Links */
+a { color: var(--av-primary); }
+a:hover { color: var(--av-primary-dark); }
+#kc-info a, #kc-registration a, .login-pf-page a { color: var(--av-primary); }
+
+/* Social providers (only when IdPs exist) — partner outlined style */
+.av-social-list { list-style: none; margin: 0 0 20px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.av-social-list li { margin: 0; }
+.av-social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px;
+  border: 1px solid var(--av-border);
+  border-radius: 0;
+  background: #fff;
+  color: var(--av-text);
+  font-weight: 500;
+  font-size: 15px;
+  text-decoration: none;
+  width: 100%;
+}
+.av-social-btn:hover { border-color: var(--av-border-hover); }
+
+/* Locale selector */
+.av-locale { margin-bottom: 16px; }
+.av-locale-list {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 10;
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid var(--av-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.08);
+  min-width: 160px;
+}
+.av-locale-list a { display: block; padding: 8px 12px; color: var(--av-text); text-decoration: none; font-size: 14px; }
+.av-locale-list a:hover { background: var(--av-bg); }
+
+/* Generic auth-page helpers (other templates: reset, otp, error, etc.) */
+#kc-form, #kc-form-wrapper, #kc-form-login { margin: 0; }
+.form-group, .kc-form-group { margin-bottom: 16px; }
+label { font-family: 'Mulish', ui-sans-serif, sans-serif; font-size: 16px; font-weight: 600; color: var(--av-text); }
+.checkbox label, .av-remember label { font-size: 14px; font-weight: 400; color: var(--av-text-secondary); }
+#kc-info-message, footer, .login-pf-page-footer {
+  color: var(--av-text-secondary);
+  font-size: 12px;
+  text-align: center;
+  margin-top: 24px;
+}
+#kc-username { margin-bottom: 16px; font-size: 16px; }
+#kc-attempted-username { font-weight: 600; }
+#reset-login { margin-left: 8px; font-size: 13px; }
+.kc-login-tooltip .kc-tooltip-text {
+  display: none;
+  position: absolute;
+  background: var(--av-text);
+  color: #fff;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+.kc-login-tooltip:hover .kc-tooltip-text { display: block; }
+
+.hidden, .invisible { display: none !important; }
