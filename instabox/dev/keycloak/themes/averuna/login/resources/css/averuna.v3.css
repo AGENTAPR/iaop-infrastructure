@@ -336,25 +336,53 @@ a { color: var(--av-primary); }
 a:hover { color: var(--av-primary-dark); }
 #kc-info a, #kc-registration a, .login-pf-page a { color: var(--av-primary); }
 
-/* Social providers (only when IdPs exist) — partner outlined style */
-.av-social-list { list-style: none; margin: 0 0 20px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
-.av-social-list li { margin: 0; }
+/* Social providers — partner: two outlined buttons side-by-side
+   (stacked on mobile), then "OR" divider. Only rendered when IdPs exist. */
+.av-social { margin-bottom: 20px; }       /* gap-5 */
+.av-social-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;                              /* gap-2.5 */
+}
+@media (min-width: 960px) {
+  .av-social-row { flex-direction: row; }
+  .av-social-row .av-social-btn { flex: 1 1 0; width: auto; }
+}
 .av-social-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 9px;
+  padding: 9px 16px;
   border: 1px solid var(--av-border);
   border-radius: 0;
   background: #fff;
   color: var(--av-text);
   font-weight: 500;
   font-size: 15px;
+  line-height: 1.5;
   text-decoration: none;
-  width: 100%;
+  cursor: pointer;
+  transition: border-color .15s ease;
 }
 .av-social-btn:hover { border-color: var(--av-border-hover); }
+.av-social-btn svg { flex: none; }
+
+/* OR divider: 1px lines both sides, 12px secondary label */
+.av-or {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 0;
+  color: var(--av-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+}
+.av-or::before, .av-or::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid var(--av-divider);
+}
 
 /* Locale selector */
 .av-locale { margin-bottom: 16px; }
