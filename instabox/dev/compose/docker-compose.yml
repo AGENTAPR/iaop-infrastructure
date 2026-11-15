@@ -119,6 +119,8 @@ services:
       KAFKA_BROKERS: kafka:9092
       EVENT_TRANSPORT: kafka
       AGENT_SERVICE_URL: http://agent-service:8080
+      AGENT_SERVICE_CLIENT_ID: iaop-agency-service
+      AGENT_SERVICE_CLIENT_SECRET: ${AGENCY_SVC_CLIENT_SECRET}
     depends_on:
       db: { condition: service_healthy }
       kafka: { condition: service_healthy }
