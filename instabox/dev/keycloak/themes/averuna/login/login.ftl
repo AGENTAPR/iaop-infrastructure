@@ -1,6 +1,6 @@
 <#import "template.ftl" as layout>
 <#import "passkeys.ftl" as passkeys>
-<@layout.registrationLayout displayMessage=!messagesPerField.existsError('username','password') displayInfo=realm.password && realm.registrationAllowed && !registrationDisabled??; section>
+<@layout.registrationLayout displayMessage=!messagesPerField.existsError('username','password') displayInfo=true; section>
     <#if section = "header">
         ${msg("loginAccountTitle")}
     <#elseif section = "form">
@@ -70,6 +70,7 @@
                         <input type="hidden" id="id-hidden-input" name="credentialId" <#if auth.selectedCredential?has_content>value="${auth.selectedCredential}"</#if>/>
                         <input tabindex="7" class="av-submit" name="login" id="kc-login" type="submit" value="${msg("doLogIn")}"/>
                     </div>
+                    <p class="av-legal">${msg("avLegalPre")} <span class="av-legal-link">${msg("avTermsLink")}</span> ${msg("avLegalAnd")} <span class="av-legal-link">${msg("avPrivacyLink")}</span>.</p>
                 </form>
             </#if>
             </div>
@@ -77,14 +78,13 @@
         <@passkeys.conditionalUIData />
         <script type="module" src="${url.resourcesPath}/js/passwordVisibility.js"></script>
     <#elseif section = "info" >
-        <#if realm.password && realm.registrationAllowed && !registrationDisabled??>
-            <div id="kc-registration-container">
-                <div id="kc-registration">
-                    <span>${msg("noAccount")} <a tabindex="8"
-                                                 href="${url.registrationUrl}">${msg("doRegister")}</a></span>
-                </div>
-            </div>
-        </#if>
+        <div class="av-get-started">
+            <hr class="av-divider" />
+            <h2 class="av-get-started-title">${msg("avGetStartedTitle")}</h2>
+            <p class="av-get-started-body">${msg("avGetStartedPre")}
+                <#if url.registrationUrl??><a class="av-get-started-link" href="${url.registrationUrl}">${msg("avSignUp")}</a><#else><span class="av-get-started-link">${msg("avSignUp")}</span></#if>.
+            </p>
+        </div>
     <#elseif section = "socialProviders" >
         <#if realm.password && social?? && social.providers?has_content>
             <div id="kc-social-providers" class="${properties.kcFormSocialAccountSectionClass!}">

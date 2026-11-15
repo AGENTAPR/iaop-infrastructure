@@ -1,19 +1,23 @@
-/* Averuna Partner theme for Keycloak — pixel-matched to
-   averuna-partner-web sign-in page (feature/agent-today-production-quality).
-   Palette: primary hsl(279 24% 31%), text hsl(270 9% 14%),
-   secondary hsl(0 0% 60%), bg hsl(40 18% 97%). Fonts: Urbanist (h1/h6),
-   Mulish (body/labels/buttons). */
+/* Averuna Partner theme for Keycloak — matched to averuna-partner-web
+   sign-in page (src/pages/auth/sign-in/page.tsx + src/style/**).
+   Palette (aubergine theme): primary hsl(279 24% 31%), light 41%, dark 21%;
+   text-primary hsl(270 9% 14%); text-secondary hsl(0 0% 60%);
+   bg hsl(40 18% 97%); grey-200 border hsl(0 0% 87%); grey-500 hover 75%.
+   Fonts: Urbanist (headings/logo), Mulish (body/inputs/buttons).
+   Type scale: h1 text-5xl=26px bold; body1/base=16px/20px;
+   body2/sm=12px; h6=text-lg=16px bold. */
 
 @import url('https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700&family=Urbanist:wght@600;700;800&display=swap');
 
 :root {
   --av-primary: hsl(279, 24%, 31%);
+  --av-primary-light: hsl(279, 24%, 41%);
   --av-primary-dark: hsl(279, 24%, 21%);
-  --av-primary-light: hsl(279, 24%, 46%);
   --av-text: hsl(270, 9%, 14%);
   --av-text-secondary: hsl(0, 0%, 60%);
-  --av-border: hsl(0, 0%, 90%);
-  --av-border-hover: hsl(0, 0%, 60%);
+  --av-border: hsl(0, 0%, 87%);        /* grey-200 */
+  --av-border-hover: hsl(0, 0%, 75%);   /* grey-500 */
+  --av-divider: hsl(0, 0%, 91%);        /* grey-100 */
   --av-bg: hsl(40, 18%, 97%);
   --av-error: hsl(347, 64%, 55%);
 }
@@ -30,7 +34,8 @@ body {
   background-repeat: no-repeat;
 }
 
-/* ---- Centered card (partner: Paper rounded-4xl, max-w-lg, p-14) ---- */
+/* ---- Centered card: Paper w-lg(512px) rounded-4xl(32px) py-14(56px),
+   inner px-8(32px) / sm:px-14(56px @>=480px), shadow-darker-xs ---- */
 .login-pf-page,
 #kc-container,
 .login-pf {
@@ -40,62 +45,68 @@ body {
   display: flex !important;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: 16px;                        /* p-4 */
   box-sizing: border-box;
 }
 
-/* Outer header (realm title) hidden — logo lives inside the card. */
+/* Outer header (realm title) hidden — wordmark lives inside the card. */
 #kc-header { display: none !important; }
 
 .card-pf,
 #kc-content,
 #kc-content-wrapper {
-  background: #fff !important;
+  background: #fff !important;          /* background-paper */
   border: none !important;
-  border-radius: 32px !important;          /* rounded-4xl */
-  box-shadow: 0 8px 24px rgba(45, 30, 60, 0.16) !important;
-  width: 512px !important;                  /* max-w-lg */
+  border-radius: 32px !important;       /* rounded-4xl */
+  box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.08) !important; /* shadow-darker-xs */
+  width: 512px !important;              /* w-lg = 32rem */
   max-width: calc(100vw - 32px) !important;
   margin: 0 auto !important;
-  padding: 56px 56px !important;            /* py-14 / px-14 */
+  padding: 56px 56px !important;        /* py-14 + sm:px-14 */
   box-sizing: border-box;
 }
-@media (max-width: 640px) {
-  .card-pf, #kc-content, #kc-content-wrapper { padding: 40px 32px !important; }
+@media (max-width: 479px) {
+  .card-pf, #kc-content, #kc-content-wrapper { padding: 56px 32px !important; } /* px-8 */
 }
 
-/* Logo inside card — partner: centered, mb-14 (56px) */
+/* Logo wordmark: Logo component — Urbanist 18px bold tracking-tight,
+   "Averuna" text-primary + " Partner" primary. mb-14 + parent gap-4 = 72px. */
 .av-logo {
-  display: block;
-  width: 120px;
-  height: auto;
-  margin: 0 auto 56px;
+  margin: 0 0 72px;
+  text-align: center;
 }
+.av-logo-text {
+  font-family: 'Urbanist', ui-sans-serif, sans-serif;
+  font-size: 18px;                      /* text-lg */
+  font-weight: 700;
+  letter-spacing: -0.025em;              /* tracking-tight */
+  color: var(--av-text);
+}
+.av-logo-accent { color: var(--av-primary); }
 
-/* ---- Title block (partner: h1 text-5xl bold Urbanist, body1 Mulish) ---- */
+/* ---- Title block: h1 text-5xl(26px) bold Urbanist mb-2; body1 16px/20px ---- */
 #kc-page-title {
   font-family: 'Urbanist', ui-sans-serif, sans-serif;
-  font-size: 48px;                          /* text-5xl */
+  font-size: 26px;                      /* text-5xl */
   font-weight: 700;
-  line-height: 1.15;
+  line-height: 1.167;
   letter-spacing: normal;
   color: var(--av-text);
-  margin: 0 0 8px;
+  margin: 0 0 8px;                      /* mb-2 */
   text-align: left;
 }
 
-/* Subtitle rendered by login.ftl (partner: body1 under title) */
 .av-subtitle {
   font-family: 'Mulish', ui-sans-serif, sans-serif;
-  font-size: 16px;
+  font-size: 16px;                      /* text-base */
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 20px;                    /* leading-5 */
   color: var(--av-text);
-  margin: 0 0 40px;                         /* gap-10 to form */
+  margin: 0 0 40px;                     /* gap-10 to form section */
 }
 
-/* ---- Form fields (partner: outlined Input, rounded-lg, grey-200 border) ---- */
-.av-field { margin-bottom: 20px; }          /* gap-5 */
+/* ---- Form fields: FormControl mb-4(16px); label mb-2 semibold 16px ---- */
+.av-field { margin-bottom: 16px; }
 
 .av-label {
   display: block;
@@ -103,9 +114,12 @@ body {
   font-size: 16px;
   font-weight: 600;
   color: var(--av-text);
-  margin-bottom: 8px;
+  margin-bottom: 8px;                   /* mb-2 */
 }
 
+/* Outlined variant (custom .outlined): square corners, grey-200 border,
+   px-3.75(15px) py-5px, text 16px/20px; hover grey-500; focus outline
+   primary/40 2px offset -1px. */
 .av-input,
 input[type='text'],
 input[type='password'],
@@ -115,19 +129,19 @@ input[type='tel'],
 .form-control,
 select {
   width: 100%;
-  padding: 7px 15px;
+  padding: 5px 15px;
   font-family: 'Mulish', ui-sans-serif, sans-serif;
   font-size: 16px;
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 20px;
   color: var(--av-text);
   background: transparent;
   border: 1px solid var(--av-border);
-  border-radius: 8px;                       /* rounded-lg */
+  border-radius: 0;
   box-sizing: border-box;
   outline: 2px solid transparent;
   outline-offset: -1px;
-  transition: border-color .15s ease, outline-color .15s ease, background .15s ease;
+  transition: border-color .15s ease, outline-color .15s ease;
 }
 
 .av-input:hover,
@@ -144,17 +158,17 @@ input[type='password']:focus,
 input[type='email']:focus,
 .form-control:focus,
 select:focus {
-  outline: 2px solid hsla(279, 24%, 46%, 0.4);  /* outline-primary/40 */
-  outline-offset: -2px;
+  outline: 2px solid hsla(279, 24%, 41%, 0.4);  /* outline-primary/40 */
+  outline-offset: -1px;
   border-color: transparent;
 }
 
-/* Password field wrapper + eye toggle */
+/* Password wrapper + eye toggle (InputAdornment end) */
 .av-input-wrap { position: relative; }
 .av-input-wrap .av-input { padding-right: 44px; }
 .av-eye {
   position: absolute;
-  right: 8px;
+  right: 4px;
   top: 50%;
   transform: translateY(-50%);
   display: inline-flex;
@@ -168,20 +182,24 @@ select:focus {
 .av-eye:hover { color: var(--av-text); }
 .av-eye svg, .av-eye i { width: 20px; height: 20px; display: block; }
 
-/* ---- Actions (partner: Reset Password link, then Continue button) ---- */
-.av-actions { margin-top: 8px; }
+/* ---- Actions: gap-2(8px) — Reset link, then Continue; button mb-4(16px) ---- */
+.av-actions { margin-top: 0; }
+.av-actions .av-submit { margin-top: 8px; }
 
-.av-reset-row { text-align: center; margin-bottom: 8px; }
+.av-reset-row { text-align: center; }
 .av-reset {
   display: inline-block;
   font-family: 'Mulish', ui-sans-serif, sans-serif;
-  font-size: 14px;
+  font-size: 12px;                      /* text-sm */
   font-weight: 600;
   color: var(--av-text-secondary);
   text-decoration: none;
 }
 .av-reset:hover { color: var(--av-primary); text-decoration: underline; }
 
+/* Continue: contained primary, medium — rounded-md(16px), px-5(20px)
+   py-2(8px), text-base/leading-5 medium normal-case, full width via
+   flex stretch, min-width 144px; hover primary-light. */
 .av-submit,
 #kc-login,
 #kc-form-buttons input,
@@ -190,18 +208,22 @@ select:focus {
 input[type='submit'].btn-primary {
   display: block;
   width: 100%;
-  margin-top: 12px;
-  padding: 8px 20px;                        /* py-2 px-5 */
+  min-width: 144px;                     /* min-w-9 */
+  margin-top: 8px;
+  margin-bottom: 16px;                  /* mb-4 */
+  padding: 8px 20px;                    /* py-2 px-5 */
+  text-align: center;
+  box-sizing: border-box;
   font-family: 'Mulish', ui-sans-serif, sans-serif;
   font-size: 16px;
   font-weight: 500;
-  line-height: 1.5;
-  text-transform: none;                     /* normal-case */
+  line-height: 20px;
+  text-transform: none;
   letter-spacing: normal;
   color: #fff;
   background: var(--av-primary) !important;
   border: none !important;
-  border-radius: 6px !important;            /* rounded-md */
+  border-radius: 16px !important;       /* rounded-md */
   cursor: pointer;
   box-shadow: none;
   transition: background .15s ease;
@@ -209,18 +231,67 @@ input[type='submit'].btn-primary {
 .av-submit:hover,
 #kc-login:hover,
 .btn-primary:hover {
-  background: var(--av-primary-dark) !important;
+  background: var(--av-primary-light) !important;
 }
+.av-submit:active,
+#kc-login:active {
+  background: var(--av-primary) !important;
+}
+
+/* Legal copy: body2 → text-sm(12px) normal text-secondary */
+.av-legal {
+  margin: 0;
+  font-family: 'Mulish', ui-sans-serif, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--av-text-secondary);
+}
+.av-legal-link {
+  color: var(--av-primary);
+  font-weight: 500;
+}
+.av-legal-link:hover { text-decoration: underline; }
+
+/* Get Started wrapper (rendered inside #kc-info on login page) */
+#kc-info, #kc-registration { margin: 0; padding: 0; }
+.av-get-started { margin-top: 20px; }
+.av-divider {
+  border: none;
+  border-top: 1px solid var(--av-divider);
+  margin: 0 0 20px;                     /* gap-5 below */
+}
+.av-get-started-title {
+  font-family: 'Urbanist', ui-sans-serif, sans-serif;
+  font-size: 16px;                      /* text-lg */
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--av-text);
+  margin: 0 0 8px;
+}
+.av-get-started-body {
+  margin: 0;
+  font-family: 'Mulish', ui-sans-serif, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--av-text-secondary);
+}
+.av-get-started-link {
+  color: var(--av-primary);
+  font-weight: 500;
+}
+a.av-get-started-link:hover { text-decoration: underline; }
 
 /* Remember-me row (when enabled) */
 .av-remember {
-  margin: 4px 0 8px;
+  margin: 0 0 16px;
   font-size: 14px;
   color: var(--av-text-secondary);
 }
 .av-remember input { accent-color: var(--av-primary); margin-right: 8px; }
 
-/* Field-level error (partner: error text under field) */
+/* Field-level error */
 .av-field-error {
   display: block;
   margin-top: 6px;
@@ -229,7 +300,7 @@ input[type='submit'].btn-primary {
   color: var(--av-error);
 }
 
-/* ---- Page-level message alert (partner: neutral error surface) ---- */
+/* ---- Page-level message alert ---- */
 .alert-error,
 .alert-danger,
 #kc-content .alert-error,
@@ -240,30 +311,30 @@ input[type='submit'].btn-primary {
   color: var(--av-error) !important;
   padding: 12px 16px;
   font-size: 14px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 .alert-success,
 .pf-m-success {
-  background: hsl(172, 65%, 96%) !important;
-  border-color: hsl(172, 65%, 78%) !important;
-  color: hsl(172, 65%, 26%) !important;
+  background: hsl(108, 45%, 96%) !important;
+  border-color: hsl(108, 45%, 80%) !important;
+  color: hsl(108, 45%, 30%) !important;
   border-radius: 8px !important;
   padding: 12px 16px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 .alert-info,
 .alert-warning,
 .pf-m-info,
 .pf-m-warning {
-  background: hsl(40, 60%, 95%) !important;
-  border-color: hsl(40, 60%, 80%) !important;
-  color: hsl(30, 60%, 35%) !important;
+  background: hsl(25, 82%, 95%) !important;
+  border-color: hsl(25, 82%, 80%) !important;
+  color: hsl(25, 82%, 35%) !important;
   border-radius: 8px !important;
   padding: 12px 16px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
-/* Links inside content (info/signup/footer areas on other pages) */
+/* Links inside content */
 #kc-info a,
 #kc-registration a,
 .login-pf-page a {
@@ -273,15 +344,7 @@ input[type='submit'].btn-primary {
 #kc-registration a:hover,
 .login-pf-page a:hover { color: var(--av-primary-dark); }
 
-#kc-registration,
-#kc-info {
-  text-align: center;
-  font-size: 14px;
-  color: var(--av-text-secondary);
-  margin-top: 24px;
-}
-
-/* Social providers (only if IdPs configured) — partner outlined style */
+/* Social providers (only rendered when IdPs exist) — partner outlined style */
 #kc-social-providers a {
   display: flex;
   align-items: center;
@@ -289,7 +352,7 @@ input[type='submit'].btn-primary {
   gap: 8px;
   padding: 9px;
   border: 1px solid var(--av-border);
-  border-radius: 6px;
+  border-radius: 0;
   background: #fff;
   color: var(--av-text);
   font-weight: 500;
@@ -308,15 +371,10 @@ footer,
   margin-top: 24px;
 }
 
-/* Other auth pages (reset/update/error) reuse base templates — give their
-   generic controls the same partner treatment. */
-#kc-form-buttons {
-  margin-top: 20px;
-}
+/* Other auth pages reuse base templates — same partner treatment. */
+#kc-form-buttons { margin-top: 20px; }
 #kc-form-buttons input,
-#kc-form-buttons button {
-  margin-top: 0;
-}
+#kc-form-buttons button { margin-top: 0; }
 .form-group label,
 #kc-form-login label {
   font-family: 'Mulish', ui-sans-serif, sans-serif;

@@ -105,7 +105,7 @@
              class="${properties.kcHeaderWrapperClass!}"></div>
     </div>
     <div class="${properties.kcFormCardClass!}">
-        <img class="av-logo" src="${url.resourcesPath}/img/logo.svg" alt="Averuna" />
+        <div class="av-logo"><span class="av-logo-text">Averuna<span class="av-logo-accent"> Partner</span></span></div>
         <header class="${properties.kcFormHeaderClass!}">
             <#if realm.internationalizationEnabled  && locale.supported?size gt 1>
                 <div class="${properties.kcLocaleMainClass!}" id="kc-locale">
