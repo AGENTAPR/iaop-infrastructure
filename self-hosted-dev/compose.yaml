@@ -19,8 +19,18 @@ include:
   - compose.observability.yaml
 
 networks:
-  iaop-internal:
-    name: iaop-internal
+  # Edge plane: only public-facing ingress (Caddy, tunnel, BFF, portal, Keycloak edge)
+  iaop-edge:
+    name: iaop-edge
+    driver: bridge
+  # Domain plane: domain services and their authorized callers (BFFs, workers, portal proxy)
+  iaop-domain:
+    name: iaop-domain
+    driver: bridge
+  # Data plane: PostgreSQL, Kafka and the services that must reach them.
+  # Caddy and the edge-only workloads are NOT members.
+  iaop-data:
+    name: iaop-data
     driver: bridge
 
 volumes:

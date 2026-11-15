@@ -22,7 +22,7 @@ chmod +x ./scripts/*.sh
 This will:
 1. Verify Docker and Docker Compose prerequisites.
 2. Initialize `.env` from `.env.example`.
-3. Create the `iaop-internal` Docker bridge network.
+3. Create the segmented Docker bridge networks: `iaop-edge`, `iaop-domain`, `iaop-data`.
 4. Launch the `foundation` profile (`iaop-postgres`, `iaop-keycloak`, `iaop-kafka`, `iaop-caddy`, `iaop-developer-portal`).
 5. Wait for PostgreSQL health checks to turn healthy.
 

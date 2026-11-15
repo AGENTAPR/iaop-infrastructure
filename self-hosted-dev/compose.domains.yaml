@@ -36,7 +36,9 @@ services:
         reservations:
           memory: 128M
     networks:
-      - iaop-internal
+      - iaop-domain
+      - iaop-data
+
 
   iaop-agency-service:
     build:
@@ -69,7 +71,9 @@ services:
         reservations:
           memory: 128M
     networks:
-      - iaop-internal
+      - iaop-domain
+      - iaop-data
+
 
   iaop-integration-service:
     build:
@@ -104,7 +108,9 @@ services:
         reservations:
           memory: 128M
     networks:
-      - iaop-internal
+      - iaop-domain
+      - iaop-data
+
 
   iaop-agent-bff:
     build:
@@ -140,4 +146,7 @@ services:
         reservations:
           memory: 128M
     networks:
-      - iaop-internal
+      - iaop-edge
+      - iaop-domain
+      - iaop-data
+
