@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iaop-developer-portal
+  namespace: iaop
+  labels:
+    app.kubernetes.io/name: iaop-developer-portal
+    app.kubernetes.io/part-of: iaop-platform
+    app.kubernetes.io/component: documentation
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: iaop-developer-portal
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: iaop-developer-portal
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      containers:
+        - name: portal
+          image: ghcr.io/agentapr/iaop-developer-portal:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: HOST
+              value: "0.0.0.0"
+            - name: PORT
+              value: "8080"
+            - name: CATALOG_PATH
+              value: "/app/catalog/services.yaml"
+            - name: CATALOG_SCHEMA_PATH
+              value: "/app/catalog/catalog.schema.json"
+            - name: SPECS_DIR
+              value: "/app/specs"
+            - name: ENVIRONMENT
+              value: "development"
+            - name: ALLOWED_VISIBILITY
+              value: "public,internal"
+            - name: RUST_LOG
+              value: "info,iaop_developer_portal=info"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 2

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: iaop-developer-portal
+  namespace: iaop
+  labels:
+    app.kubernetes.io/name: iaop-developer-portal
+    app.kubernetes.io/part-of: iaop-platform
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: iaop-developer-portal

@@ -1,0 +1,152 @@
+# ==============================================================================
+# IAOP Self-Hosted DEV — Domain Microservices Compose
+# Services: Agent Service, Agency Service, Agent BFF, Integration Service
+# Resource Target: AMD Ryzen 5, 16 GB RAM (Domains Subtotal: ~1.8 GB)
+# ==============================================================================
+
+services:
+  iaop-agent-service:
+    build:
+      context: ../../iaop-agent-service
+      dockerfile: Dockerfile
+    image: iaop-agent-service:latest
+    container_name: iaop-agent-service
+    profiles: ["agent", "domains", "all"]
+    restart: unless-stopped
+    environment:
+      PORT: 8080
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres_dev_secret_change_me}@postgres:5432/iaop_agent
+      KAFKA_BROKERS: kafka:9092
+      RUST_LOG: ${RUST_LOG:-info}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/health/live || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+        reservations:
+          memory: 128M
+    networks:
+      - iaop-domain
+      - iaop-data
+
+
+  iaop-agency-service:
+    build:
+      context: ../../iaop-agency-service
+      dockerfile: Dockerfile
+    image: iaop-agency-service:latest
+    container_name: iaop-agency-service
+    profiles: ["agency", "domains", "all"]
+    restart: unless-stopped
+    environment:
+      PORT: 8080
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres_dev_secret_change_me}@postgres:5432/iaop_agency
+      KAFKA_BROKERS: kafka:9092
+      RUST_LOG: ${RUST_LOG:-info}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/health/live || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+        reservations:
+          memory: 128M
+    networks:
+      - iaop-domain
+      - iaop-data
+
+
+  iaop-integration-service:
+    build:
+      context: ../../iaop-integration-service
+      dockerfile: Dockerfile
+    image: iaop-integration-service:latest
+    container_name: iaop-integration-service
+    profiles: ["integration", "domains", "all"]
+    restart: unless-stopped
+    environment:
+      PORT: 8080
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres_dev_secret_change_me}@postgres:5432/iaop_integration
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      CALLBACK_HMAC_SECRET: ${CALLBACK_HMAC_SECRET:-dev-webhook-hmac-sha256-secret-654321}
+      CONNECTOR_MODE: mock
+      RUST_LOG: ${RUST_LOG:-info}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/health/live || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
+    networks:
+      - iaop-domain
+      - iaop-data
+
+
+  iaop-agent-bff:
+    build:
+      context: ../../iaop-agent-bff
+      dockerfile: Dockerfile
+    image: iaop-agent-bff:latest
+    container_name: iaop-agent-bff
+    profiles: ["agent", "domains", "all"]
+    restart: unless-stopped
+    environment:
+      PORT: 8080
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres_dev_secret_change_me}@postgres:5432/iaop_agent_bff
+      AGENT_SERVICE_URL: http://iaop-agent-service:8080
+      AGENCY_SERVICE_URL: http://iaop-agency-service:8080
+      INTEGRATION_SERVICE_URL: http://iaop-integration-service:8080
+      JWT_SECRET: ${JWT_SECRET:-dev-jwt-hmac-secret-at-least-32-chars-long-123456}
+      RUST_LOG: ${RUST_LOG:-info}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      iaop-agent-service:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/health/live || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
+    networks:
+      - iaop-edge
+      - iaop-domain
+      - iaop-data
+

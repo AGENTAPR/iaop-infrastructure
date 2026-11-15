@@ -1,0 +1,254 @@
+# IAOP DEV stack on the shared InstaBox machine (iaop-keycloak-dev).
+# Coexists with the existing iaop-keycloak compose project on the same host.
+# All stateful data lives on the persistent /data volume.
+# Nothing here is exposed publicly except via `instabox port publish`
+# (BFF and docs only); Postgres and Kafka have no host ports at all.
+name: iaop-dev
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: iaop-dev-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: iaop_admin
+      POSTGRES_PASSWORD: ${IAOP_DB_ADMIN_PASSWORD:?set in .env}
+      POSTGRES_DB: postgres
+      # Passed through to 01-databases.sh for idempotent role creation
+      AGENT_DB_PASSWORD: ${AGENT_DB_PASSWORD:?set in .env}
+      AGENCY_DB_PASSWORD: ${AGENCY_DB_PASSWORD:?set in .env}
+      ELIG_DB_PASSWORD: ${ELIG_DB_PASSWORD:?set in .env}
+      BFF_DB_PASSWORD: ${BFF_DB_PASSWORD:?set in .env}
+    volumes:
+      - /data/iaop-dev/postgres:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "127.0.0.1:5432:5432"   # localhost-only: integration tests on sandbox host
+    networks: [iaop-data]
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U iaop_admin"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    deploy:
+      resources:
+        limits: { memory: 512M }
+
+  kafka:
+    image: apache/kafka:3.7.0
+    container_name: iaop-dev-kafka
+    restart: unless-stopped
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
+      KAFKA_LISTENERS: "PLAINTEXT://:9092,CONTROLLER://:9093,HOST://:29092"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092,HOST://localhost:29092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,HOST:PLAINTEXT"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_HEAP_OPTS: "-Xms512m -Xmx768m"
+    volumes:
+      - /data/iaop-dev/kafka:/var/lib/kafka/data
+    ports:
+      - "127.0.0.1:29092:29092"  # localhost-only: integration tests on sandbox host
+    networks: [iaop-data]
+
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    deploy:
+      resources:
+        limits: { memory: 1024M }
+
+  agent-service:
+    image: iaop/agent-service:dev
+    build:
+      context: ../src/iaop-agent-service
+    container_name: iaop-dev-agent-service
+    restart: unless-stopped
+    environment:
+      ENVIRONMENT: development
+      BIND_ADDR: 0.0.0.0:8080
+      DATABASE_URL: postgres://agent_svc:${AGENT_DB_PASSWORD}@db:5432/agent_db
+      AUTH_MODE: jwt
+      OIDC_ISSUER: ${OIDC_ISSUER}
+      OIDC_JWKS_URL: ${OIDC_JWKS_URL}
+      OIDC_AUDIENCE: iaop-agent-api
+      KAFKA_BROKERS: kafka:9092
+      EVENT_TRANSPORT: kafka
+      ELIGIBILITY_SERVICE_URL: http://eligibility-service:8080
+    depends_on:
+      db: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+    networks: [iaop-domain, iaop-data]
+
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080 && printf \"GET /health/live HTTP/1.0\r\n\r\n\" >&3 && head -1 <&3 | grep -q \" 200\"'"]
+      interval: 15s
+      timeout: 5s
+      start_period: 20s
+      retries: 5
+    deploy:
+      resources:
+        limits: { memory: 512M }
+
+  agency-service:
+    image: iaop/agency-service:dev
+    build:
+      context: ../src/iaop-agency-service
+    container_name: iaop-dev-agency-service
+    restart: unless-stopped
+    environment:
+      ENVIRONMENT: development
+      BIND_ADDR: 0.0.0.0:8080
+      DATABASE_URL: postgres://agency_svc:${AGENCY_DB_PASSWORD}@db:5432/agency_db
+      AUTH_MODE: jwt
+      OIDC_ISSUER: ${OIDC_ISSUER}
+      OIDC_JWKS_URL: ${OIDC_JWKS_URL}
+      OIDC_AUDIENCE: iaop-agency-api
+      KAFKA_BROKERS: kafka:9092
+      EVENT_TRANSPORT: kafka
+      AGENT_SERVICE_URL: http://agent-service:8080
+      AGENT_SERVICE_CLIENT_ID: iaop-agency-service
+      AGENT_SERVICE_CLIENT_SECRET: ${AGENCY_SVC_CLIENT_SECRET}
+    depends_on:
+      db: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+      agent-service: { condition: service_healthy }
+    networks: [iaop-domain, iaop-data]
+
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080 && printf \"GET /health/live HTTP/1.0\r\n\r\n\" >&3 && head -1 <&3 | grep -q \" 200\"'"]
+      interval: 15s
+      timeout: 5s
+      start_period: 20s
+      retries: 5
+    deploy:
+      resources:
+        limits: { memory: 512M }
+
+  eligibility-service:
+    image: iaop/eligibility-service:dev
+    build:
+      context: ../src/iaop-eligibility-service
+    container_name: iaop-dev-eligibility-service
+    restart: unless-stopped
+    environment:
+      ENVIRONMENT: development
+      BIND_ADDR: 0.0.0.0:8080
+      DATABASE_URL: postgres://elig_svc:${ELIG_DB_PASSWORD}@db:5432/eligibility_db
+    depends_on:
+      db: { condition: service_healthy }
+    networks: [iaop-domain, iaop-data]
+
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080 && printf \"GET /health/live HTTP/1.0\r\n\r\n\" >&3 && head -1 <&3 | grep -q \" 200\"'"]
+      interval: 15s
+      timeout: 5s
+      start_period: 20s
+      retries: 5
+    deploy:
+      resources:
+        limits: { memory: 384M }
+
+  agent-bff:
+    image: iaop/agent-bff:dev
+    build:
+      context: ../src/iaop-agent-bff
+    container_name: iaop-dev-agent-bff
+    restart: unless-stopped
+    environment:
+      ENVIRONMENT: development
+      BIND_ADDR: 0.0.0.0:8080
+      DATABASE_URL: postgres://bff_svc:${BFF_DB_PASSWORD}@db:5432/bff_db
+      SESSIONS_ENCRYPTION_KEY: ${SESSIONS_ENCRYPTION_KEY}
+      OIDC_ISSUER: ${OIDC_ISSUER}
+      OIDC_CLIENT_ID: iaop-agent-bff
+      OIDC_CLIENT_SECRET: ${BFF_CLIENT_SECRET}
+      OIDC_REDIRECT_URI: ${BFF_REDIRECT_URI}
+      OIDC_REDIRECT_URI_ALLOWLIST: ${BFF_REDIRECT_URI},${PORTAL_BFF_CALLBACK}
+      APP_BASE_URL: ${BFF_PUBLIC_URL}
+      OIDC_ALLOWED_RETURN_PATHS: "/,/dashboard,/today,/agency,/agents,/auth/callback,/reference"
+      AGENT_SERVICE_URL: http://agent-service:8080
+      AGENCY_SERVICE_URL: http://agency-service:8080
+      ELIGIBILITY_SERVICE_URL: http://eligibility-service:8080
+    ports:
+      - "127.0.0.1:8082:8080"
+    depends_on:
+      db: { condition: service_healthy }
+      agent-service: { condition: service_healthy }
+      agency-service: { condition: service_healthy }
+    networks: [iaop-edge, iaop-domain, iaop-data]
+
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080 && printf \"GET /health/ready HTTP/1.0\r\n\r\n\" >&3 && head -1 <&3 | grep -q \" 200\"'"]
+      interval: 15s
+      timeout: 5s
+      start_period: 25s
+      retries: 5
+    deploy:
+      resources:
+        limits: { memory: 512M }
+
+  docs:
+    image: iaop/api-docs:dev
+    build:
+      context: ../src/iaop-api-contracts
+      dockerfile: portal/Dockerfile
+    container_name: iaop-dev-api-docs
+    restart: unless-stopped
+    environment:
+      HOST: 0.0.0.0
+      PORT: "8080"
+      CATALOG_PATH: /app/catalog/services.yaml
+      SPECS_DIR: /app/specs
+      ENVIRONMENT: development
+      PUBLIC_BASE_URL: ${PORTAL_PUBLIC_URL}
+      OIDC_ISSUER: ${OIDC_ISSUER}
+      OIDC_JWKS_URL: ${OIDC_JWKS_URL}
+      OIDC_CLIENT_ID: iaop-developer-portal
+      OIDC_CLIENT_SECRET: ${PORTAL_CLIENT_SECRET}
+      OIDC_REDIRECT_URI: ${PORTAL_REDIRECT_URI}
+      UPSTREAM_AGENT_BFF: http://agent-bff:8080
+      UPSTREAM_AGENT_SERVICE: http://agent-service:8080
+      UPSTREAM_AGENCY_SERVICE: http://agency-service:8080
+      UPSTREAM_ELIGIBILITY_SERVICE: http://eligibility-service:8080
+    ports:
+      - "127.0.0.1:8083:8080"
+    networks: [iaop-edge, iaop-domain]
+
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080 && printf \"GET /health/live HTTP/1.0\r\n\r\n\" >&3 && head -1 <&3 | grep -q \" 200\"'"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits: { memory: 256M }
+
+# Segmented private networks (Docker bridge membership is coarse-grained;
+# the hard boundary is "no published ports" for domain/data services).
+#   iaop-edge   -> public-facing workloads only (BFF, Developer Portal)
+#   iaop-domain -> domain services + authorized callers (BFF, portal proxy)
+#   iaop-data   -> PostgreSQL, Kafka + services that must reach them
+networks:
+  iaop-edge:
+    name: iaop-edge
+    driver: bridge
+  iaop-domain:
+    name: iaop-domain
+    driver: bridge
+  iaop-data:
+    name: iaop-data
+    driver: bridge

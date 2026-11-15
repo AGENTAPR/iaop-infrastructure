@@ -1,0 +1,127 @@
+# ==============================================================================
+# IAOP Self-Hosted DEV Reverse Proxy — Caddy Edge Gateway
+#
+# Architecture invariant:
+#   FRONTEND -> CADDY -> BFF -> AUTHORIZED DOMAIN SERVICES
+#
+# This file intentionally contains NO routes to domain microservices
+# (agent-service, agency-service, eligibility-service, etc.). Domain services
+# are reachable only inside the private service network by authorized callers
+# (BFFs, workers, the Developer Portal's controlled DEV testing proxy).
+#
+# Routing is HOST-BASED: each public hostname maps to exactly one upstream.
+# Set the hostnames via environment variables (see compose.foundation.yaml):
+#   {$AGENT_HOST}     -> Agent BFF   (agent-facing application API)
+#   {$PORTAL_HOST}    -> Developer Portal (separate DEV access plane)
+#   {$AUTH_HOST}      -> Keycloak    (public OIDC issuer)
+# Any other Host header falls through to the terminal 404 block.
+# ==============================================================================
+
+{
+    admin off
+    auto_https off
+    log {
+        output stdout
+        format json
+    }
+}
+
+# ------------------------------------------------------------------------------
+# Reusable snippets
+# ------------------------------------------------------------------------------
+
+(security_headers) {
+    header {
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "geolocation=(), camera=(), microphone=()"
+        Cache-Control "no-store, no-cache, must-revalidate"
+        -Server
+    }
+}
+
+# Normalize the request ID at the trusted edge: overwrite any client-supplied
+# value so downstream correlation/audit IDs cannot be forged.
+(request_id) {
+    header X-Request-ID "{http.request.uuid}"
+}
+
+(proxy_policy) {
+    import request_id
+    request_body {
+        max_size 10MB
+    }
+    transport http {
+        dial_timeout 3s
+        response_header_timeout 30s
+        keepalive 120s
+        keepalive_idle_conns 64
+    }
+}
+
+# ------------------------------------------------------------------------------
+# Public virtual hosts (allowlist — nothing else is reachable)
+# ------------------------------------------------------------------------------
+
+# Agent application: the ONLY public application API surface.
+# Browser -> Caddy -> Agent BFF -> private domain services.
+{$AGENT_HOST} {
+    import security_headers
+    import proxy_policy
+    encode zstd gzip
+
+    handle /healthz {
+        respond "OK" 200
+    }
+
+    reverse_proxy iaop-agent-bff:8080 {
+        header_up Host {upstream_hostport}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+        header_up X-Request-ID {http.request.header.X-Request-ID}
+    }
+}
+
+# Developer Portal: separate DEV access plane. Owns portal_session OIDC,
+# Scalar catalog, and the controlled /dev-api testing proxy (which itself
+# enforces developer auth + portal-api-tester role + service allowlist).
+{$PORTAL_HOST} {
+    import security_headers
+    import proxy_policy
+    encode zstd gzip
+
+    handle /healthz {
+        respond "OK" 200
+    }
+
+    reverse_proxy iaop-developer-portal:8080 {
+        header_up Host {upstream_hostport}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+        header_up X-Request-ID {http.request.header.X-Request-ID}
+    }
+}
+
+# Keycloak: public identity provider. OIDC issuer URLs and redirect URIs must
+# match the configured public hostname exactly.
+{$AUTH_HOST} {
+    import security_headers
+    import proxy_policy
+
+    reverse_proxy keycloak:8080 {
+        header_up Host {upstream_hostport}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+        header_up X-Forwarded-Host {host}
+        header_up X-Forwarded-Port {server_port}
+    }
+}
+
+# ------------------------------------------------------------------------------
+# Terminal fallback: unknown Host / health probe -> 404 (never proxy inward)
+# ------------------------------------------------------------------------------
+
+:80 {
+    respond "Not Found" 404
+}

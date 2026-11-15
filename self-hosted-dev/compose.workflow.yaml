@@ -1,0 +1,39 @@
+# ==============================================================================
+# IAOP Self-Hosted DEV — Workflow Engine Compose
+# Services: Flowable OSS 7.0 BPMN / CMMN Engine
+# Resource Target: AMD Ryzen 5, 16 GB RAM (Workflow Subtotal: ~1.5 GB)
+# ==============================================================================
+
+services:
+  iaop-workflow:
+    image: flowable/flowable-rest:7.0.0
+    container_name: iaop-workflow
+    profiles: ["workflow", "all"]
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${FLOWABLE_DB:-iaop_workflow}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-postgres_dev_secret_change_me}
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      FLOWABLE_COMMON_APP_IDM_ADMIN_USER: admin
+      FLOWABLE_COMMON_APP_IDM_ADMIN_PASSWORD: ${FLOWABLE_ADMIN_PASSWORD:-admin_dev_flowable_secret}
+      JAVA_OPTS: "-Xms${FLOWABLE_JVM_XMS:-256m} -Xmx${FLOWABLE_JVM_XMX:-1024m} -XX:+ExitOnOutOfMemoryError"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/flowable-rest/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 1536M
+        reservations:
+          memory: 512M
+    networks:
+      - iaop-domain
+
