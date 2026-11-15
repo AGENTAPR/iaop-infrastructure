@@ -7,10 +7,19 @@ Averuna logo.
 
 ## Structure
 
-- `login/theme.properties` — `parent=keycloak`, so all stock FreeMarker
-  templates and flows (login, OTP, reset-credentials, error, logout, etc.)
-  are inherited unchanged. Only `resources/css/login.css` and images are
-  overridden. No template or authentication-logic changes.
+- `login/theme.properties` — `parent=keycloak`.
+- `login/template.ftl` — copy of the stock layout with two changes: the
+  realm-title header is emptied and the Averuna logo `<img>` is injected as
+  the first child of the card. All other pages (OTP, reset, error, logout)
+  inherit it, so they get the same branded shell.
+- `login/login.ftl` — partner-web sign-in markup (subtitle, labeled fields,
+  eye toggle, Reset Password link, Continue button) while preserving every
+  Keycloak mechanism: form action, `username`/`password`/`credentialId`
+  fields, `data-password-toggle` JS hooks, passkeys, social providers.
+- `login/messages/messages_en.properties` — copy overrides
+  (`Sign in`, `Continue`, `Reset Password`, subtitle).
+- `login/resources/css/login.css` — pixel-matched partner styling
+  (512px card, 32px radius, grey-200 outlined inputs, aubergine button).
 - `login/resources/css/login.css` — reskins the PatternFly DOM
   (`#kc-*`, `.login-pf-*`, `.card-pf`, `.form-control`, `.btn-primary`)
   to the Averuna look.
