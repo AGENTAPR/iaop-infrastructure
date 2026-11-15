@@ -178,7 +178,7 @@ services:
       OIDC_REDIRECT_URI: ${BFF_REDIRECT_URI}
       OIDC_REDIRECT_URI_ALLOWLIST: ${BFF_REDIRECT_URI},${PORTAL_BFF_CALLBACK}
       APP_BASE_URL: ${BFF_PUBLIC_URL}
-      OIDC_ALLOWED_RETURN_PATHS: "/,/dashboard,/today,/agency,/agents,/auth/callback"
+      OIDC_ALLOWED_RETURN_PATHS: "/,/dashboard,/today,/agency,/agents,/auth/callback,/reference"
       AGENT_SERVICE_URL: http://agent-service:8080
       AGENCY_SERVICE_URL: http://agency-service:8080
       ELIGIBILITY_SERVICE_URL: http://eligibility-service:8080
