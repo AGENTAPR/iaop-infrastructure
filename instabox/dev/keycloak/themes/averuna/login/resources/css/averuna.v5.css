@@ -29,7 +29,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; }
 
 body {
   font-family: 'Mulish', ui-sans-serif, system-ui, sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 20px;
   color: var(--av-text);
   background-color: var(--av-bg);
@@ -53,6 +53,7 @@ body {
    py-14(56px) + px-8(32px)/sm:px-14(56px @>=480px),
    shadow-darker-xs: 0 3px 8px rgba(0,0,0,.08) ---- */
 .av-card {
+  position: relative;
   background: #fff;
   border-radius: 32px;
   box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.08);
@@ -73,7 +74,7 @@ body {
 @media (max-width: 959px) { .av-logo { display: none; } }
 .av-logo-text {
   font-family: 'Urbanist', ui-sans-serif, sans-serif;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.025em;
   color: var(--av-text);
@@ -85,7 +86,7 @@ body {
   font-family: 'Urbanist', ui-sans-serif, sans-serif;
   font-size: 26px;
   font-weight: 700;
-  line-height: 1.167;
+  line-height: 1;
   letter-spacing: normal;
   color: var(--av-text);
   margin: 0 0 8px;
@@ -97,7 +98,7 @@ body {
 /* Subtitle under title (login page). */
 .av-subtitle {
   font-family: 'Mulish', ui-sans-serif, sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 400;
   line-height: 20px;
   color: var(--av-text);
@@ -111,7 +112,7 @@ body {
 .av-label {
   display: block;
   font-family: 'Mulish', ui-sans-serif, sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--av-text);
   margin-bottom: 8px;
@@ -133,7 +134,7 @@ textarea {
   width: 100%;
   padding: 7px 15px;
   font-family: 'Mulish', ui-sans-serif, sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 400;
   line-height: 20px;
   color: var(--av-text);
@@ -225,7 +226,7 @@ button[type='submit'] {
   padding: 8px 20px;
   text-align: center;
   font-family: 'Mulish', ui-sans-serif, sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
   line-height: 20px;
   text-transform: none;
@@ -278,14 +279,14 @@ button[type='submit']:active {
   font-family: 'Urbanist', ui-sans-serif, sans-serif;
   font-size: 16px;
   font-weight: 700;
-  line-height: 1.5;
+  line-height: 28px;
   color: var(--av-text);
   margin: 0 0 8px;
 }
 .av-get-started-body {
   margin: 0;
   font-family: 'Mulish', ui-sans-serif, sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 400;
   line-height: 20px;
   color: var(--av-text-secondary);
@@ -360,7 +361,7 @@ a:hover { color: var(--av-primary-dark); }
   background: #fff;
   color: var(--av-text);
   font-weight: 500;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 20px;
   text-decoration: none;
   cursor: pointer;
@@ -388,8 +389,21 @@ a:hover { color: var(--av-primary-dark); }
   border-top: 1px solid var(--av-divider);
 }
 
-/* Locale selector */
-.av-locale { margin-bottom: 16px; }
+/* Locale selector — pinned top-right of card */
+.av-locale { position: absolute; top: 28px; right: 32px; margin: 0; }
+@media (max-width: 479px) { .av-locale { right: 20px; } }
+.av-locale button {
+  background: none;
+  border: none;
+  font-family: 'Mulish', ui-sans-serif, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--av-text-secondary);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+.av-locale button:hover { color: var(--av-text); background: var(--av-bg); }
 .av-locale-list {
   position: absolute;
   right: 0;
@@ -410,7 +424,7 @@ a:hover { color: var(--av-primary-dark); }
 /* Generic auth-page helpers (other templates: reset, otp, error, etc.) */
 #kc-form, #kc-form-wrapper, #kc-form-login { margin: 0; }
 .form-group, .kc-form-group { margin-bottom: 16px; }
-label { font-family: 'Mulish', ui-sans-serif, sans-serif; font-size: 16px; font-weight: 600; color: var(--av-text); }
+label { font-family: 'Mulish', ui-sans-serif, sans-serif; font-size: 14px; font-weight: 600; color: var(--av-text); }
 .checkbox label, .av-remember label { font-size: 14px; font-weight: 400; color: var(--av-text-secondary); }
 #kc-info-message, footer, .login-pf-page-footer {
   color: var(--av-text-secondary);
