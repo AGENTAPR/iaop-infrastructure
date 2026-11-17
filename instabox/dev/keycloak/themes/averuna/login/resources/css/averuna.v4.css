@@ -70,6 +70,7 @@ body {
 /* ---- Logo wordmark (login page): Urbanist 18px bold tracking-tight,
    "Averuna" text-primary + " Partner" primary; offset 72px ---- */
 .av-logo { margin: 0 0 72px; text-align: center; }
+@media (max-width: 959px) { .av-logo { display: none; } }
 .av-logo-text {
   font-family: 'Urbanist', ui-sans-serif, sans-serif;
   font-size: 18px;
@@ -130,7 +131,7 @@ input:not([type]),
 select,
 textarea {
   width: 100%;
-  padding: 5px 15px;
+  padding: 7px 15px;
   font-family: 'Mulish', ui-sans-serif, sans-serif;
   font-size: 16px;
   font-weight: 400;
@@ -342,7 +343,7 @@ a:hover { color: var(--av-primary-dark); }
 .av-social-row {
   display: flex;
   flex-direction: column;
-  gap: 10px;                              /* gap-2.5 */
+  gap: 8px;                               /* gap-2 */
 }
 @media (min-width: 960px) {
   .av-social-row { flex-direction: row; }
@@ -353,19 +354,22 @@ a:hover { color: var(--av-primary-dark); }
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 9px 16px;
-  border: 1px solid var(--av-border);
-  border-radius: 0;
+  padding: 7px 19px;                       /* py-[calc(.5rem-1px)] px-4.75 */
+  border: 1px solid var(--av-border);      /* border-grey-200 */
+  border-radius: 16px;                     /* rounded-md */
   background: #fff;
   color: var(--av-text);
   font-weight: 500;
-  font-size: 15px;
-  line-height: 1.5;
+  font-size: 16px;
+  line-height: 20px;
   text-decoration: none;
   cursor: pointer;
-  transition: border-color .15s ease;
+  transition: background .15s ease, color .15s ease;
 }
-.av-social-btn:hover { border-color: var(--av-border-hover); }
+.av-social-btn:hover {
+  background: hsla(0, 0%, 87%, 0.10);      /* bg-grey-200/10 */
+  color: var(--av-primary-dark);           /* text-primary-dark */
+}
 .av-social-btn svg { flex: none; }
 
 /* OR divider: 1px lines both sides, 12px secondary label */
